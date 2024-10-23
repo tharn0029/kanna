@@ -48,47 +48,109 @@
         .delete-btn:hover {
             background-color: #da190b;
         }
+        .writing-btn {
+            background-color: #2196F3;
+            display: none;
+            animation: fadeIn 0.3s ease-in;
+        }
+        .format-examples {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .format-examples code {
+            display: block;
+            margin: 5px 0;
+            font-family: monospace;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
     </style>
 </head>
 <body>
     <h1>Message Extractor</h1>
-    <p>Paste your array in the format: ["&lt;Ostart&gt;Kanna&lt;Oend&gt;","&lt;Ostart&gt;Tharun&lt;Oend&gt;"]</p>
+    <div class="format-examples">
+        <p>Paste your text in either format:</p>
+        <code>["&lt;Ostart&gt;Kanna&lt;Oend&gt;","&lt;Ostart&gt;Tharun&lt;Oend&gt;"]</code>
+        <p>OR</p>
+        <code>"&lt;Ostart&gt;Kanna&lt;Oend&gt;"</code>
+    </div>
     
-    <textarea id="inputArray" placeholder='Enter your array here...'></textarea>
+    <textarea id="inputArray" placeholder='Enter your text here...'></textarea>
     <div class="button-group">
         <button class="extract-btn" onclick="extractLastMessage()">Extract Last Message</button>
         <button class="delete-btn" onclick="deleteContent()">Delete</button>
+        <button class="writing-btn" id="writingButton">Writing...</button>
     </div>
     
     <div id="result"></div>
 
     <script>
+        let typingTimer;
+        const writingButton = document.getElementById('writingButton');
+        const inputField = document.getElementById('inputArray');
+
+        // Function to show Writing button
+        function showWritingButton() {
+            writingButton.style.display = 'block';
+        }
+
+        // Function to hide Writing button
+        function hideWritingButton() {
+            writingButton.style.display = 'none';
+        }
+
+        // Input event listener
+        inputField.addEventListener('input', function() {
+            // Show button immediately when typing starts
+            showWritingButton();
+            
+            // Clear the existing timer
+            clearTimeout(typingTimer);
+            
+            // Set new timer
+            typingTimer = setTimeout(() => {
+                hideWritingButton();
+            }, 2000); // 2 seconds delay
+        });
+
         function extractLastMessage() {
             try {
-                // Get the input value and parse it as JSON
-                const input = document.getElementById('inputArray').value;
-                const array = JSON.parse(input);
-                
-                // Get the last element
-                const lastElement = array[array.length - 1];
-                
-                // Remove the tags using regex
-                const cleanMessage = lastElement.replace(/<Ostart>|<Oend>/g, '');
-                
-                // Display the result without any heading
+                let input = document.getElementById('inputArray').value.trim();
+                let cleanMessage = '';
+
+                try {
+                    const parsedInput = JSON.parse(input);
+                    
+                    if (Array.isArray(parsedInput)) {
+                        cleanMessage = parsedInput[parsedInput.length - 1].replace(/<Ostart>|<Oend>/g, '');
+                    } else if (typeof parsedInput === 'string') {
+                        cleanMessage = parsedInput.replace(/<Ostart>|<Oend>/g, '');
+                    }
+                } catch (e) {
+                    if (input.includes('<Ostart>') && input.includes('<Oend>')) {
+                        cleanMessage = input.replace(/<Ostart>|<Oend>/g, '').replace(/"/g, '');
+                    } else {
+                        throw new Error('Invalid format');
+                    }
+                }
+
                 document.getElementById('result').innerHTML = cleanMessage;
+                
             } catch (error) {
                 document.getElementById('result').innerHTML = `
-                    <span style="color: red;">Error: Please check your input format. Make sure it's a valid array.</span>
+                    <span style="color: red;">Error: Please check your input format. Make sure it follows one of the example formats shown above.</span>
                 `;
             }
         }
 
         function deleteContent() {
-            // Clear the textarea
             document.getElementById('inputArray').value = '';
-            // Clear the result
             document.getElementById('result').innerHTML = '';
+            hideWritingButton();
         }
     </script>
 </body>
