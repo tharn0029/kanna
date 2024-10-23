@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Message Extractor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+        }
+        .extract-btn {
+            background-color: #4CAF50;
+        }
+        .extract-btn:hover {
+            background-color: #45a049;
+        }
+        .delete-btn {
+            background-color: #f44336;
+        }
+        .delete-btn:hover {
+            background-color: #da190b;
+        }
+    </style>
+</head>
+<body>
+    <h1>Message Extractor</h1>
+    <p>Paste your array in the format: ["&lt;Ostart&gt;Kanna&lt;Oend&gt;","&lt;Ostart&gt;Tharun&lt;Oend&gt;"]</p>
+    
+    <textarea id="inputArray" placeholder='Enter your array here...'></textarea>
+    <div class="button-group">
+        <button class="extract-btn" onclick="extractLastMessage()">Extract Last Message</button>
+        <button class="delete-btn" onclick="deleteContent()">Delete</button>
+    </div>
+    
+    <div id="result"></div>
+
+    <script>
+        function extractLastMessage() {
+            try {
+                // Get the input value and parse it as JSON
+                const input = document.getElementById('inputArray').value;
+                const array = JSON.parse(input);
+                
+                // Get the last element
+                const lastElement = array[array.length - 1];
+                
+                // Remove the tags using regex
+                const cleanMessage = lastElement.replace(/<Ostart>|<Oend>/g, '');
+                
+                // Display the result without any heading
+                document.getElementById('result').innerHTML = cleanMessage;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <span style="color: red;">Error: Please check your input format. Make sure it's a valid array.</span>
+                `;
+            }
+        }
+
+        function deleteContent() {
+            // Clear the textarea
+            document.getElementById('inputArray').value = '';
+            // Clear the result
+            document.getElementById('result').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
