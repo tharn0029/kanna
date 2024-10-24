@@ -122,17 +122,24 @@
                 let input = document.getElementById('inputArray').value.trim();
                 let cleanMessage = '';
 
+                // First, try to parse as JSON
                 try {
                     const parsedInput = JSON.parse(input);
                     
                     if (Array.isArray(parsedInput)) {
+                        // Handle array format
                         cleanMessage = parsedInput[parsedInput.length - 1].replace(/<Ostart>|<Oend>/g, '');
                     } else if (typeof parsedInput === 'string') {
+                        // Handle single string JSON format
                         cleanMessage = parsedInput.replace(/<Ostart>|<Oend>/g, '');
+                    } else {
+                        throw new Error('Invalid format');
                     }
-                } catch (e) {
+                } catch (jsonError) {
+                    // If JSON parsing fails, try direct string processing
                     if (input.includes('<Ostart>') && input.includes('<Oend>')) {
-                        cleanMessage = input.replace(/<Ostart>|<Oend>/g, '').replace(/"/g, '');
+                        // Remove quotes first, then remove tags
+                        cleanMessage = input.replace(/["']/g, '').replace(/<Ostart>|<Oend>/g, '');
                     } else {
                         throw new Error('Invalid format');
                     }
