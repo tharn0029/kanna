@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Message Extractor</title>
+    <title>Simple Message Extractor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -16,6 +16,7 @@
             height: 100px;
             margin: 10px 0;
             padding: 10px;
+            font-family: monospace;
         }
         #result {
             margin-top: 20px;
@@ -23,6 +24,7 @@
             border: 1px solid #ddd;
             border-radius: 4px;
             background-color: #f9f9f9;
+            font-size: 16px;
         }
         .button-group {
             display: flex;
@@ -48,11 +50,6 @@
         .delete-btn:hover {
             background-color: #da190b;
         }
-        .writing-btn {
-            background-color: #2196F3;
-            display: none;
-            animation: fadeIn 0.3s ease-in;
-        }
         .format-examples {
             background-color: #f8f9fa;
             padding: 15px;
@@ -64,92 +61,42 @@
             margin: 5px 0;
             font-family: monospace;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
     </style>
 </head>
 <body>
-    <h1>Message Extractor</h1>
+    <h1>Simple Message Extractor</h1>
     <div class="format-examples">
-        <p>Paste your text in either format:</p>
-        <code>["&lt;Ostart&gt;Kanna&lt;Oend&gt;","&lt;Ostart&gt;Tharun&lt;Oend&gt;"]</code>
-        <p>OR</p>
-        <code>"&lt;Ostart&gt;Kanna&lt;Oend&gt;"</code>
+        <p>Paste your array in this format:</p>
+        <code>["kanna","222"]</code>
     </div>
     
-    <textarea id="inputArray" placeholder='Enter your text here...'></textarea>
+    <textarea id="inputArray" placeholder='Enter your array here...'></textarea>
     <div class="button-group">
         <button class="extract-btn" onclick="extractLastMessage()">Extract Last Message</button>
-        <button class="delete-btn" onclick="deleteContent()">Delete</button>
-        <button class="writing-btn" id="writingButton">Writing...</button>
+        <button class="delete-btn" onclick="deleteContent()">Clear</button>
     </div>
     
     <div id="result"></div>
 
     <script>
-        let typingTimer;
-        const writingButton = document.getElementById('writingButton');
-        const inputField = document.getElementById('inputArray');
-
-        // Function to show Writing button
-        function showWritingButton() {
-            writingButton.style.display = 'block';
-        }
-
-        // Function to hide Writing button
-        function hideWritingButton() {
-            writingButton.style.display = 'none';
-        }
-
-        // Input event listener
-        inputField.addEventListener('input', function() {
-            // Show button immediately when typing starts
-            showWritingButton();
-            
-            // Clear the existing timer
-            clearTimeout(typingTimer);
-            
-            // Set new timer
-            typingTimer = setTimeout(() => {
-                hideWritingButton();
-            }, 2000); // 2 seconds delay
-        });
-
         function extractLastMessage() {
             try {
                 let input = document.getElementById('inputArray').value.trim();
-                let cleanMessage = '';
-
-                // First, try to parse as JSON
-                try {
-                    const parsedInput = JSON.parse(input);
-                    
-                    if (Array.isArray(parsedInput)) {
-                        // Handle array format
-                        cleanMessage = parsedInput[parsedInput.length - 1].replace(/<Ostart>|<Oend>/g, '');
-                    } else if (typeof parsedInput === 'string') {
-                        // Handle single string JSON format
-                        cleanMessage = parsedInput.replace(/<Ostart>|<Oend>/g, '');
-                    } else {
-                        throw new Error('Invalid format');
-                    }
-                } catch (jsonError) {
-                    // If JSON parsing fails, try direct string processing
-                    if (input.includes('<Ostart>') && input.includes('<Oend>')) {
-                        // Remove quotes first, then remove tags
-                        cleanMessage = input.replace(/["']/g, '').replace(/<Ostart>|<Oend>/g, '');
-                    } else {
-                        throw new Error('Invalid format');
-                    }
-                }
-
-                document.getElementById('result').innerHTML = cleanMessage;
+                let parsedInput = JSON.parse(input);
                 
+                if (Array.isArray(parsedInput)) {
+                    let lastMessage = parsedInput[parsedInput.length - 1];
+                    
+                    // Remove "ChatGPT" from the start of the message if it exists
+                    lastMessage = lastMessage.replace(/^ChatGPT\s*/, '');
+                    
+                    document.getElementById('result').innerHTML = lastMessage;
+                } else {
+                    throw new Error('Not an array');
+                }
             } catch (error) {
                 document.getElementById('result').innerHTML = `
-                    <span style="color: red;">Error: Please check your input format. Make sure it follows one of the example formats shown above.</span>
+                    <span style="color: red;">Error: Please enter a valid array format like ["kanna","222"]</span>
                 `;
             }
         }
@@ -157,7 +104,6 @@
         function deleteContent() {
             document.getElementById('inputArray').value = '';
             document.getElementById('result').innerHTML = '';
-            hideWritingButton();
         }
     </script>
 </body>
